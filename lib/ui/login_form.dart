@@ -56,20 +56,28 @@ Widget loginForm(BuildContext context) {
                 // If the form is valid, display a snackbar. In the real world,
                 // you'd often call a server or save the information in a database.
                 final client = ApiRequestUser(
-                    Dio(BaseOptions(contentType: "application/json")),
+                    Dio(BaseOptions(contentType: Headers.jsonContentType,responseType: ResponseType.json)),
                     baseUrl: 'https://reqres.in/api');
-                print("TRY");
                 try {
                   Future _future = client.login(post);
                   _future.then((value) {
                     Provider.of<DATA>(context, listen: false).setToken = value.token.toString();
                     _future = client.getUserData("12");
-                    _future.then((value) {
-                      Provider.of<DATA>(context, listen: false).userData = value.data;
+                    _future.then((valueData) {
+                      print("VALUE " + value.token);
+                      if(value.token != "") {
+                        Provider.of<DATA>(context, listen: false).userData = valueData.data;
+                      }
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text('Done! Token: ' + value.token.toString())),
+                        (value.token.toString() == "") ?
+                        const SnackBar(
+                          backgroundColor: Colors.redAccent,
+                          content: Text('Email or Password incorrect')
+                      ) : SnackBar(
+                            backgroundColor: Colors.lightGreen,
+                            content: Text('Done! Token: ' + value.token.toString())
+                        )
                     );
                   });
                 } catch(err) {
